@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+#ENV["IS_CONSOLE"] = "1"
+
+require "irb"
+require "irb/completion"
+require_relative "config/environment"
+require_relative "config/boot"
+require "rails/console/app"
+require "rails/console/helpers"
+
+puts "connecting to reading only"
+
+ActiveRecord::Base.logger = ActiveSupport::Logger.new(STDOUT)
+replicas = ActiveRecord::Base.configurations.configs_for(env_name: "development", include_replicas: true).select(&:replica?)
+ActiveRecord::Base.configurations = replicas
+ActiveRecord::Base.connecting_to(role: :reading)
+
+IRB::ExtendCommandBundle.include(Rails::ConsoleMethods)
+IRB.start
+
